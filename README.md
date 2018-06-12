@@ -19,6 +19,7 @@ The reporting tool should answer the following questions:
 ## Contents
 The project consists of the following files:
 - news.py - contains the python script to run.
+- create_views.sql - contains the ```SQL CREATE VIEW table``` statements and the queries used.
 - results.txt - contains the printed results from running the program.
 - output_screenshot.png - a screenshot of the results on the command line.
 
@@ -29,52 +30,62 @@ The project consists of the following files:
 
 ## How to Run the Project
 Download and install the Linux-based virtual machine (VM), which includes all the necessary software (including PostgreSQL) to run the application.
-1) Install [Vagrant](https://www.vagrantup.com/)
-2) Install [Virtual Box](https://www.virtualbox.org/wiki/Downloads)
+1) Install [Virtual Box](https://www.virtualbox.org/wiki/Downloads)
+   Install the platform package for your operating system. You do not need the extension pack or the SDK.
+2) Install [Vagrant](https://www.vagrantup.com/)
 3) Clone this repository to your computer in a directory of your choice
 4) Start the VM from your terminal, inside the vagrant directory:
    * run the command ```vagrant up``` to start up the VM
    * run the command ```vagrant ssh``` to log into the VM
    * change to your vagrant directory: ```cd /vagrant```
-5) Download the data:
+   Files in the VM's /vagrant directory are shared with the repository's folder on your computer.
+5) Download the data [here](https://d17h27t6h515a5.cloudfront.net/topher/2016/August/57b5f748_newsdata/newsdata.zip)
    Unzip the file after downloading. Put the file newsdata.sql into the vagrant directory which is shared with your VM.
 6) Load the database:
    ```psql -d news -f newsdata.sql```
-7) Run the program:
-   ```python news.py```
+7) Create the VIEW tables from create_views.sql:
+   ```psql -d news -f create_views.sql```
+8) Run the program:
+   ```python3 news.py```
    
 ## Views Used
-The program creates the following views when running the queries on the command line:
+The program creates the following views when loading create_views.sql on the command line:
 * **top_articles**
 ```SQL 
-create or replace view top_articles as
-select articles.title, count(*) as total_views
-from articles, log
-where log.status like '%200%'
-and log.path like concat('%', articles.slug, '%')
-group by articles.title order by total_views desc limit 3;
+CREATE VIEW top_articles AS
+    SELECT articles.title, count(*) AS total_views
+    FROM articles, log
+    WHERE log.status like '%200%'
+    AND log.path = '/article' || articles.slug
+    GROUP BY articles.title
+    ORDER BY total_views DESC
+    LIMIT 3;
 ```
 
 * **top_authors**
 ```SQL
-create or replace view top_authors as
-select authors.name, count(*) as total_views
-from authors, articles, log
-where articles.author = authors.id
-and log.status like '%200%'
-and log.path like concat('%', articles.slug, '%')
-group by authors.name order by total_views desc;
+CREATE VIEW top_authors AS
+    SELECT authors.name, count(*) AS total_views
+    FROM authors, articles, log
+    WHERE articles.author = authors.id
+    AND log.status like '%200%'
+    AND log.path = '/article' || articles.slug
+    GROUP BY authors.name
+    ORDER BY total_views DESC;
 ```
 
 * **status_errors**
 ```SQL
-create or replace view status_errors as
-select * from
-(select time::timestamp::date as Date,
- round((sum(case log.status when '404 NOT FOUND' then 1 else 0 end)*100.0)/count(log.status), 2)
- as error_percent from log
- group by time::timestamp::date order by error_percent desc)
-as subq where error_percent >1;
+CREATE VIEW status_errors AS
+    SELECT * FROM
+        (SELECT time::timestamp::date AS Date,
+        round((sum(CASE log.status WHEN
+        '404 NOT FOUND' THEN 1 ELSE 0 END)*100.0)/count(log.status), 2)
+        AS error_percent
+        FROM log
+        GROUP BY time::timestamp::date
+        ORDER BY error_percent DESC) AS subq
+    WHERE error_percent >1;
 ```
 ## Output
 
