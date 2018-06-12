@@ -31,6 +31,7 @@ The project consists of the following files:
 ## How to Run the Project
 Download and install the Linux-based virtual machine (VM), which includes all the necessary software (including PostgreSQL) to run the application.
 1) Install [Virtual Box](https://www.virtualbox.org/wiki/Downloads)
+   
    Install the platform package for your operating system. You do not need the extension pack or the SDK.
 2) Install [Vagrant](https://www.vagrantup.com/)
 3) Clone this repository to your computer in a directory of your choice
@@ -38,8 +39,8 @@ Download and install the Linux-based virtual machine (VM), which includes all th
    * run the command ```vagrant up``` to start up the VM
    * run the command ```vagrant ssh``` to log into the VM
    * change to your vagrant directory: ```cd /vagrant```
-   Files in the VM's /vagrant directory are shared with the repository's folder on your computer.
 5) Download the data [here](https://d17h27t6h515a5.cloudfront.net/topher/2016/August/57b5f748_newsdata/newsdata.zip)
+   
    Unzip the file after downloading. Put the file newsdata.sql into the vagrant directory which is shared with your VM.
 6) Load the database:
    ```psql -d news -f newsdata.sql```
