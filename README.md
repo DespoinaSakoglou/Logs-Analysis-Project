@@ -78,4 +78,4 @@ as subq where error_percent >1;
 ```
 ## Output
 
-![Output Screenshot](/output_screensot.png)
+![](/output_screenshot.png)
